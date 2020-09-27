@@ -22,6 +22,12 @@ class ServerUpdate extends ListEvent {
   const ServerUpdate({this.serverUrl});
 }
 
+class ServerUpdateAll extends ListEvent {
+  final Map<String, Server> servers;
+
+  const ServerUpdateAll({this.servers});
+}
+
 class InitEvent extends ListEvent {
   final Map<String, Server> servers;
 

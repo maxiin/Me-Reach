@@ -83,116 +83,123 @@ class ServerPage extends StatelessWidget {
             }
           },
         ),
-        body: BlocBuilder<ListBloc, ListState>(builder: (context, state) {
-          List<Widget> children = [];
-          if (state is ListLoading) {
-            return Center(
-              child: CircularProgressIndicator(),
-            );
-          }
-          if (state is ListInitial) {
-            if (state.servers != null && _servers.length == 0) {
-              _servers = state.servers;
+        body: RefreshIndicator(
+          onRefresh: () async {
+            BlocProvider.of<ListBloc>(context)
+                .add(ServerUpdateAll(servers: _servers));
+          },
+          child: BlocBuilder<ListBloc, ListState>(builder: (context, state) {
+            List<Widget> children = [];
+            if (state is ListLoading) {
+              return Center(
+                child: CircularProgressIndicator(),
+              );
             }
-          }
-          if (state is ListAdded) {
-            _servers[state.server.url] = state.server;
-          }
-          if (state is ListRemove) {
-            _servers.remove(state.serverUrl);
-          }
-          if (state is ListItemLoading) {
-            try {
-              final found = _servers[state.serverUrl];
-              found.loading = true;
-              _servers[state.serverUrl] = found;
-            } catch (_) {}
-          }
-          if (state is ListUpdate) {
-            try {
-              final found = _servers[state.serverUrl];
-              found.status = state.newStatus;
-              found.loading = false;
-              _servers[state.serverUrl] = found;
-            } catch (_) {}
-          }
-          _servers.values.forEach((element) {
-            List<Widget> cardContent;
-            Color statusColor = Colors.blueAccent;
-            String statusText = element.status.toString();
-
-            if (element.loading) {
-              cardContent = [CircularProgressIndicator()];
-            } else {
-              if (element.status == 200) {
-                statusText = "Online";
-                statusColor = Colors.greenAccent;
-              } else if (element.status == 0) {
-                statusText = "Offline";
-                statusColor = Colors.redAccent;
-              } else {
-                statusText = "Com Erro";
-                statusColor = Colors.amberAccent;
+            if (state is ListInitial) {
+              if (state.servers != null && _servers.length == 0) {
+                _servers = state.servers;
               }
-              cardContent = [
-                Text(element.name),
-                SizedBox(
-                  height: 16,
-                ),
-                Text(
-                  statusText,
-                  style: TextStyle(fontSize: 20),
-                )
-              ];
             }
+            if (state is ListAdded) {
+              _servers[state.server.url] = state.server;
+            }
+            if (state is ListRemove) {
+              _servers.remove(state.serverUrl);
+            }
+            if (state is ListItemLoading) {
+              try {
+                final found = _servers[state.serverUrl];
+                found.loading = true;
+                _servers[state.serverUrl] = found;
+              } catch (_) {}
+            }
+            if (state is ListUpdate) {
+              print(state.serverUrl);
+              try {
+                final found = _servers[state.serverUrl];
+                found.status = state.newStatus;
+                found.loading = false;
+                _servers[state.serverUrl] = found;
+              } catch (_) {}
+            }
+            _servers.values.forEach((element) {
+              List<Widget> cardContent;
+              Color statusColor = Colors.blueAccent;
+              String statusText = element.status.toString();
 
-            children.add(Card(
-              child: SizedBox(
-                  height: 100,
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
-                        children: [
-                          SizedBox(
-                            width: 10,
-                            child: Container(
-                              color: statusColor,
+              if (element.loading) {
+                cardContent = [CircularProgressIndicator()];
+              } else {
+                if (element.status == 200) {
+                  statusText = "Online";
+                  statusColor = Colors.greenAccent;
+                } else if (element.status == 0) {
+                  statusText = "Offline";
+                  statusColor = Colors.redAccent;
+                } else {
+                  statusText = "Com Erro";
+                  statusColor = Colors.amberAccent;
+                }
+                cardContent = [
+                  Text(element.name),
+                  SizedBox(
+                    height: 16,
+                  ),
+                  Text(
+                    statusText,
+                    style: TextStyle(fontSize: 20),
+                  )
+                ];
+              }
+
+              children.add(Card(
+                child: SizedBox(
+                    height: 100,
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            SizedBox(
+                              width: 10,
+                              child: Container(
+                                color: statusColor,
+                              ),
                             ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.fromLTRB(8, 16, 0, 0),
-                            child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: cardContent),
-                          ),
-                        ],
-                      ),
-                      PopupMenuButton<String>(
-                        onSelected: (String str) {
-                          if (str == 'Reload') {
-                            BlocProvider.of<ListBloc>(context)
-                                .add(ServerUpdate(serverUrl: element.url));
-                          } else if (str == 'Remove') {
-                            BlocProvider.of<ListBloc>(context)
-                                .add(ServerExclude(serverUrl: element.url));
-                          }
-                        },
-                        itemBuilder: (BuildContext context) {
-                          return {'Reload', 'Remove'}.map((String choice) {
-                            return PopupMenuItem<String>(
-                              value: choice,
-                              child: Text(choice),
-                            );
-                          }).toList();
-                        },
-                      ),
-                    ],
-                  )),
-            ));
-          });
-          return ListView(children: children);
-        }));
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(8, 16, 0, 0),
+                              child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: cardContent),
+                            ),
+                          ],
+                        ),
+                        PopupMenuButton<String>(
+                          onSelected: (String str) {
+                            if (str == 'Reload') {
+                              BlocProvider.of<ListBloc>(context)
+                                  .add(ServerUpdate(serverUrl: element.url));
+                            } else if (str == 'Remove') {
+                              BlocProvider.of<ListBloc>(context)
+                                  .add(ServerExclude(serverUrl: element.url));
+                            }
+                          },
+                          itemBuilder: (BuildContext context) {
+                            return {'Reload', 'Remove'}.map((String choice) {
+                              return PopupMenuItem<String>(
+                                value: choice,
+                                child: Text(choice),
+                              );
+                            }).toList();
+                          },
+                        ),
+                      ],
+                    )),
+              ));
+            });
+            return ListView(children: children);
+          }),
+        ));
   }
 }
