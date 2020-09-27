@@ -8,5 +8,5 @@ class Server {
   String name;
   Color color = Colors.blueAccent;
   int status = 0;
-  bool online = false;
+  bool loading = true;
 }

@@ -1,18 +1,23 @@
-import 'dart:async';
-
-import 'package:MeReach/Drivers/server_api.dart';
+import 'package:MeReach/drivers/server_api.dart';
 import 'package:MeReach/entities/server_entity.dart';
-import 'package:meta/meta.dart';
+import 'package:flutter/widgets.dart';
 
 class ListRepository {
-  List<Server> _servers = [];
+  Map<String, Server> _servers = new Map();
+  final ServerApiClient serverApiClient;
 
-  List<Server> getServers() {
+  ListRepository({@required this.serverApiClient});
+
+  Map<String, Server> getServers() {
     return _servers;
   }
 
-  List<Server> addServer(Server server) {
-    this._servers.add(server);
+  Map<String, Server> addServer(Server server) {
+    this._servers[server.name] = server;
     return _servers;
+  }
+
+  Future<int> getStatus(String url) async {
+    return serverApiClient.getStatus(url);
   }
 }
