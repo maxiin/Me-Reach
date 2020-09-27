@@ -5,7 +5,13 @@ abstract class ListState {
   const ListState();
 }
 
-class ListInitial extends ListState {}
+class ListInitial extends ListState {
+  final Map<String, Server> servers;
+
+  const ListInitial({@required this.servers});
+}
+
+class ListLoading extends ListState {}
 
 class ListAdded extends ListState {
   final Server server;

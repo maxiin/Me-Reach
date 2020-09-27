@@ -9,3 +9,9 @@ class ServerInclude extends ListEvent {
 
   const ServerInclude({this.server});
 }
+
+class InitEvent extends ListEvent {
+  final Map<String, Server> servers;
+
+  const InitEvent({this.servers});
+}

@@ -11,10 +11,11 @@ import 'entities/server_entity.dart';
 class ServerPage extends StatelessWidget {
   final nameCtrl = TextEditingController();
   final urlCtrl = TextEditingController();
-  final Map<String, Server> _servers = new Map();
 
   @override
   Widget build(BuildContext context) {
+    Map<String, Server> _servers = new Map();
+
     _showDialog() async {
       return await showDialog<String>(
         context: context,
@@ -78,14 +79,22 @@ class ServerPage extends StatelessWidget {
                     new Server(name: obj['name'], url: obj['url']);
                 BlocProvider.of<ListBloc>(context)
                     .add(ServerInclude(server: srv));
-              } catch (e) {
-                print(e);
-              }
+              } catch (_) {}
             }
           },
         ),
         body: BlocBuilder<ListBloc, ListState>(builder: (context, state) {
           List<Widget> children = [];
+          if (state is ListLoading) {
+            return Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+          if (state is ListInitial) {
+            if (state.servers != null && _servers.length == 0) {
+              _servers = state.servers;
+            }
+          }
           if (state is ListAdded) {
             _servers[state.server.url] = state.server;
           }
