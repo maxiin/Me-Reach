@@ -36,5 +36,14 @@ class ListBloc extends Bloc<ListEvent, ListState> {
       final status = await this.listRepository.getStatus(event.server.url);
       yield ListUpdate(serverUrl: event.server.url, newStatus: status);
     }
+    if (event is ServerUpdate) {
+      yield ListItemLoading(serverUrl: event.serverUrl);
+      final status = await this.listRepository.getStatus(event.serverUrl);
+      yield ListUpdate(serverUrl: event.serverUrl, newStatus: status);
+    }
+    if (event is ServerExclude) {
+      listRepository.removeServer(event.serverUrl);
+      yield ListRemove(serverUrl: event.serverUrl);
+    }
   }
 }

@@ -26,6 +26,11 @@ class ListRepository {
     return this._servers.containsKey(server.url);
   }
 
+  void removeServer(String url) {
+    this._servers.remove(url);
+    _localStorage.writeServers(_servers);
+  }
+
   Future<int> getStatus(String url) async {
     return serverApiClient.getStatus(url);
   }

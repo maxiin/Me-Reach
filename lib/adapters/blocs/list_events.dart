@@ -10,6 +10,18 @@ class ServerInclude extends ListEvent {
   const ServerInclude({this.server});
 }
 
+class ServerExclude extends ListEvent {
+  final String serverUrl;
+
+  const ServerExclude({this.serverUrl});
+}
+
+class ServerUpdate extends ListEvent {
+  final String serverUrl;
+
+  const ServerUpdate({this.serverUrl});
+}
+
 class InitEvent extends ListEvent {
   final Map<String, Server> servers;
 

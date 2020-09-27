@@ -98,6 +98,9 @@ class ServerPage extends StatelessWidget {
           if (state is ListAdded) {
             _servers[state.server.url] = state.server;
           }
+          if (state is ListRemove) {
+            _servers.remove(state.serverUrl);
+          }
           if (state is ListItemLoading) {
             try {
               final found = _servers[state.serverUrl];
@@ -147,19 +150,44 @@ class ServerPage extends StatelessWidget {
               child: SizedBox(
                   height: 100,
                   child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      SizedBox(
-                        width: 10,
-                        child: Container(
-                          color: statusColor,
-                        ),
+                      Row(
+                        children: [
+                          SizedBox(
+                            width: 10,
+                            child: Container(
+                              color: statusColor,
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(8, 16, 0, 0),
+                            child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: cardContent),
+                          ),
+                        ],
                       ),
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(8, 16, 0, 0),
-                        child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: cardContent),
-                      )
+                      PopupMenuButton<String>(
+                        onSelected: (String str) {
+                          if (str == 'Reload') {
+                            BlocProvider.of<ListBloc>(context)
+                                .add(ServerUpdate(serverUrl: element.url));
+                          } else if (str == 'Remove') {
+                            BlocProvider.of<ListBloc>(context)
+                                .add(ServerExclude(serverUrl: element.url));
+                          }
+                        },
+                        itemBuilder: (BuildContext context) {
+                          return {'Reload', 'Remove'}.map((String choice) {
+                            return PopupMenuItem<String>(
+                              value: choice,
+                              child: Text(choice),
+                            );
+                          }).toList();
+                        },
+                      ),
                     ],
                   )),
             ));

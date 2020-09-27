@@ -26,6 +26,12 @@ class ListUpdate extends ListState {
   const ListUpdate({@required this.serverUrl, @required this.newStatus});
 }
 
+class ListRemove extends ListState {
+  final String serverUrl;
+
+  const ListRemove({@required this.serverUrl});
+}
+
 class ListItemLoading extends ListState {
   final String serverUrl;
 
