@@ -1,5 +1,4 @@
 import 'package:MeReach/entities/server_entity.dart';
-import 'package:meta/meta.dart';
 
 abstract class ListEvent {
   const ListEvent();

@@ -12,7 +12,7 @@ class ServerApiClient implements BaseApi {
 
   @override
   Future<int> getStatus(String url) async {
-    if (!url.startsWith('http')) {
+    if (!url.startsWith('http://') || !url.startsWith('https://')) {
       // using http not https for compatibility;
       url = 'http://' + url;
     }

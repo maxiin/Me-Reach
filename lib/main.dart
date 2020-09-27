@@ -1,4 +1,3 @@
-import 'package:MeReach/Adapters/server_repository.dart';
 import 'package:MeReach/adapters/list_repository.dart';
 import 'package:MeReach/servers.dart';
 import 'package:flutter/material.dart';

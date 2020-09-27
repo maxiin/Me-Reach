@@ -65,29 +65,27 @@ class ServerPage extends StatelessWidget {
 
     return Scaffold(
         appBar: AppBar(
-          title: Text('Flutter Weather'),
-          // actions: <Widget>[
-          //   IconButton(
-          //     icon: Icon(Icons.search),
-          //     onPressed: () async {
-          //       final city = await Navigator.push(
-          //         context,
-          //         MaterialPageRoute(
-          //           builder: (context) => CitySelection(),
-          //         ),
-          //       );
-          //       if (city != null) {
-          //         BlocProvider.of<WeatherBloc>(context)
-          //             .add(WeatherRequested(city: city));
-          //       }
-          //     },
-          //   )
-          // ],
+          title: Text('Me Reach'),
+        ),
+        floatingActionButton: FloatingActionButton(
+          child: Icon(Icons.add),
+          onPressed: () async {
+            final res = await _showDialog();
+            if (res != null) {
+              try {
+                final obj = jsonDecode(res);
+                final Server srv =
+                    new Server(name: obj['name'], url: obj['url']);
+                BlocProvider.of<ListBloc>(context)
+                    .add(ServerInclude(server: srv));
+              } catch (e) {
+                print(e);
+              }
+            }
+          },
         ),
         body: BlocBuilder<ListBloc, ListState>(builder: (context, state) {
           List<Widget> children = [];
-          print(state);
-          print(_servers.length);
           if (state is ListAdded) {
             _servers[state.server.url] = state.server;
           }
@@ -109,26 +107,31 @@ class ServerPage extends StatelessWidget {
           _servers.values.forEach((element) {
             List<Widget> cardContent;
             Color statusColor = Colors.blueAccent;
+            String statusText = element.status.toString();
+
             if (element.loading) {
               cardContent = [CircularProgressIndicator()];
             } else {
+              if (element.status == 200) {
+                statusText = "Online";
+                statusColor = Colors.greenAccent;
+              } else if (element.status == 0) {
+                statusText = "Offline";
+                statusColor = Colors.redAccent;
+              } else {
+                statusText = "Com Erro";
+                statusColor = Colors.amberAccent;
+              }
               cardContent = [
                 Text(element.name),
                 SizedBox(
                   height: 16,
                 ),
                 Text(
-                  element.status.toString(),
+                  statusText,
                   style: TextStyle(fontSize: 20),
                 )
               ];
-              if (element.status == 200) {
-                statusColor = Colors.greenAccent;
-              } else if (element.status == 0) {
-                statusColor = Colors.redAccent;
-              } else {
-                statusColor = Colors.yellowAccent;
-              }
             }
 
             children.add(Card(
@@ -152,22 +155,6 @@ class ServerPage extends StatelessWidget {
                   )),
             ));
           });
-          children.add(RaisedButton(
-              child: Text('add'),
-              onPressed: () async {
-                final res = await _showDialog();
-                if (res != null) {
-                  try {
-                    final obj = jsonDecode(res);
-                    final Server srv =
-                        new Server(name: obj['name'], url: obj['url']);
-                    BlocProvider.of<ListBloc>(context)
-                        .add(ServerInclude(server: srv));
-                  } catch (e) {
-                    print(e);
-                  }
-                }
-              }));
           return ListView(children: children);
         }));
   }

@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 
 class Server {
-  Server({@required this.url, @required this.name, this.color}) {}
+  Server({@required this.url, @required this.name, this.color});
 
   String url;
   String name;
