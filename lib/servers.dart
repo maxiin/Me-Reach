@@ -90,14 +90,26 @@ class ServerPage extends StatelessWidget {
           },
           child: BlocBuilder<ListBloc, ListState>(builder: (context, state) {
             List<Widget> children = [];
+            print('state ' + state.toString());
+            if (state is ListAdded) {
+              print('url ' + state.server.url);
+            }
+            if (state is ListItemLoading) {
+              print('url ' + state.serverUrl);
+            }
+            if (state is ListItemUpdate) {
+              print('url ' + state.serverUrl);
+            }
             if (state is ListLoading) {
               return Center(
                 child: CircularProgressIndicator(),
               );
             }
-            if (state is ListInitial) {
+            if (state is ListUpdate) {
               if (state.servers != null && _servers.length == 0) {
-                _servers = state.servers;
+                _servers = state.servers.map((key, value) {
+                  return new MapEntry(key, value);
+                });
               }
             }
             if (state is ListAdded) {
@@ -113,8 +125,8 @@ class ServerPage extends StatelessWidget {
                 _servers[state.serverUrl] = found;
               } catch (_) {}
             }
-            if (state is ListUpdate) {
-              print(state.serverUrl);
+            if (state is ListItemUpdate) {
+              //print(state.serverUrl);
               try {
                 final found = _servers[state.serverUrl];
                 found.status = state.newStatus;

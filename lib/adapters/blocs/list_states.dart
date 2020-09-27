@@ -5,10 +5,10 @@ abstract class ListState {
   const ListState();
 }
 
-class ListInitial extends ListState {
+class ListUpdate extends ListState {
   final Map<String, Server> servers;
 
-  const ListInitial({@required this.servers});
+  const ListUpdate({@required this.servers});
 }
 
 class ListLoading extends ListState {}
@@ -19,11 +19,11 @@ class ListAdded extends ListState {
   const ListAdded({@required this.server});
 }
 
-class ListUpdate extends ListState {
+class ListItemUpdate extends ListState {
   final String serverUrl;
   final int newStatus;
 
-  const ListUpdate({@required this.serverUrl, @required this.newStatus});
+  const ListItemUpdate({@required this.serverUrl, @required this.newStatus});
 }
 
 class ListRemove extends ListState {
