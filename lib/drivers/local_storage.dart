@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:MeReach/entities/server_entity.dart';
 import 'package:path_provider/path_provider.dart';
 
+/// Local storage will use file saving system, for compatibility and the no need for external packages (besides flutter.dev's path package).
 class LocalStorage {
   Future<String> get _localPath async {
     final directory = await getApplicationDocumentsDirectory();
