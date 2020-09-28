@@ -29,7 +29,6 @@ class ListBloc extends Bloc<ListEvent, ListState> {
       for (Server server in event.servers.values) {
         final status = await this.listRepository.getStatus(server.url);
         server.status = status;
-        server.loading = false;
         this.listRepository.addServer(server);
       }
       yield ListUpdate(servers: event.servers);

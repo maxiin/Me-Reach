@@ -1,5 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:MeReach/adapters/blocs/timer_bloc.dart';
+import 'package:MeReach/adapters/blocs/timer_event.dart';
+import 'package:MeReach/adapters/blocs/timer_state.dart';
 import 'package:flutter/material.dart';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -7,6 +10,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'adapters/blocs/list_bloc.dart';
 import 'adapters/blocs/list_events.dart';
 import 'adapters/blocs/list_states.dart';
+import 'adapters/blocs/timer_bloc.dart';
 import 'entities/server_entity.dart';
 
 class ServerPage extends StatefulWidget {
@@ -18,6 +22,7 @@ class ServerPage extends StatefulWidget {
 class _ServerPageState extends State<ServerPage> {
   final nameCtrl = TextEditingController();
   final urlCtrl = TextEditingController();
+  final int counterDurationSeconds = 60;
 
   @override
   Widget build(BuildContext context) {
@@ -61,14 +66,71 @@ class _ServerPageState extends State<ServerPage> {
             new FlatButton(
                 child: const Text('CREATE'),
                 onPressed: () {
-                  final name = nameCtrl.text;
-                  final url = urlCtrl.text;
+                  String name = nameCtrl.text;
+                  String url = urlCtrl.text;
+                  if (name == null) {
+                    name = url;
+                  }
+                  nameCtrl.clear();
+                  urlCtrl.clear();
                   Navigator.pop(
                       context, jsonEncode({'name': name, 'url': url}));
                 })
           ],
         ),
       );
+    }
+
+    List<Widget> _actions() {
+      final TimerState currentState = BlocProvider.of<TimerBloc>(context).state;
+      if (currentState is TimerInitial) {
+        BlocProvider.of<TimerBloc>(context).add(TimerReset());
+        BlocProvider.of<TimerBloc>(context)
+            .add(TimerStarted(duration: counterDurationSeconds));
+        return [SizedBox()];
+      }
+      if (currentState is TimerRunInProgress) {
+        return [
+          FloatingActionButton(
+            child: Icon(Icons.pause),
+            onPressed: () =>
+                BlocProvider.of<TimerBloc>(context).add(TimerPaused()),
+          ),
+          FloatingActionButton(
+            child: Icon(Icons.replay),
+            onPressed: () =>
+                BlocProvider.of<TimerBloc>(context).add(TimerReset()),
+          ),
+        ];
+      }
+      if (currentState is TimerRunPause) {
+        return [
+          FloatingActionButton(
+            child: Icon(Icons.play_arrow),
+            onPressed: () =>
+                BlocProvider.of<TimerBloc>(context).add(TimerResumed()),
+          ),
+          FloatingActionButton(
+            child: Icon(Icons.replay),
+            onPressed: () =>
+                BlocProvider.of<TimerBloc>(context).add(TimerReset()),
+          ),
+        ];
+      }
+      if (currentState is TimerRunComplete) {
+        BlocProvider.of<ListBloc>(context)
+            .add(ServerUpdateAll(servers: _servers));
+        BlocProvider.of<TimerBloc>(context).add(TimerReset());
+        return [SizedBox()];
+      }
+      return [];
+    }
+
+    double _progressCounter(int current) {
+      final multi = 100 / counterDurationSeconds;
+      final percent = (current * multi) / 100;
+      final reverse = (percent - 1) * -1;
+      return reverse;
     }
 
     return Scaffold(
@@ -96,37 +158,38 @@ class _ServerPageState extends State<ServerPage> {
                 .add(ServerUpdateAll(servers: _servers));
           },
           child: Column(children: [
-            // Padding(
-            //   padding: const EdgeInsets.all(8.0),
-            //   child: Column(
-            //     crossAxisAlignment: CrossAxisAlignment.start,
-            //     children: [
-            //       Padding(
-            //         padding: const EdgeInsets.only(bottom: 8),
-            //         child: Text(
-            //           'Recarregando em $_start s',
-            //           style: TextStyle(
-            //             fontWeight: FontWeight.bold,
-            //             fontSize: 24,
-            //           ),
-            //         ),
-            //       ),
-            //       LinearProgressIndicator(
-            //         value: (_start * 1.667) / 100,
-            //       ),
-            //       RaisedButton(
-            //         onPressed: () {
-            //           startTimer();
-            //         },
-            //         child: Text("start"),
-            //       ),
-            //     ],
-            //   ),
-            // ),
+            BlocBuilder<TimerBloc, TimerState>(builder: (context, state) {
+              final String minutesStr = ((state.duration / 60) % 60)
+                  .floor()
+                  .toString()
+                  .padLeft(2, '0');
+              final String secondsStr =
+                  (state.duration % 60).floor().toString().padLeft(2, '0');
+              return Column(
+                children: [
+                  LinearProgressIndicator(
+                    value: _progressCounter(state.duration),
+                  ),
+                  Text('$minutesStr:$secondsStr',
+                      style: TextStyle(
+                        fontSize: 60,
+                        fontWeight: FontWeight.bold,
+                      )),
+                ],
+              );
+            }),
+            BlocBuilder<TimerBloc, TimerState>(
+              buildWhen: (previousState, state) =>
+                  state.runtimeType != previousState.runtimeType,
+              builder: (context, state) => Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: _actions()),
+            ),
             Expanded(
               child:
                   BlocBuilder<ListBloc, ListState>(builder: (context, state) {
                 List<Widget> children = [];
+                print(state);
                 if (state is ListLoading) {
                   return Center(
                     child: CircularProgressIndicator(),
@@ -135,8 +198,10 @@ class _ServerPageState extends State<ServerPage> {
                 if (state is ListUpdate) {
                   if (state.servers != null && _servers.length == 0) {
                     _servers = state.servers.map((key, value) {
+                      value.loading = false;
                       return new MapEntry(key, value);
                     });
+                    print(_servers.values);
                   }
                 }
                 if (state is ListAdded) {
