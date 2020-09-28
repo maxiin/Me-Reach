@@ -8,5 +8,6 @@ class Server {
   String name;
   Color color = Colors.blueAccent;
   int status = 0;
+  DateTime updatedAt = DateTime.now();
   bool loading = true;
 }

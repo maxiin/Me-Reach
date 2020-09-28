@@ -198,6 +198,7 @@ class _ServerPageState extends State<ServerPage> {
                 if (state is ListUpdate) {
                   if (state.servers != null && _servers.length == 0) {
                     _servers = state.servers.map((key, value) {
+                      value.updatedAt = DateTime.now();
                       value.loading = false;
                       return new MapEntry(key, value);
                     });
@@ -226,6 +227,7 @@ class _ServerPageState extends State<ServerPage> {
                   try {
                     final found = _servers[state.serverUrl];
                     if (found != null) {
+                      found.updatedAt = DateTime.now();
                       found.status = state.newStatus;
                       found.loading = false;
                       _servers[state.serverUrl] = found;
@@ -263,7 +265,10 @@ class _ServerPageState extends State<ServerPage> {
                       Text(
                         statusText,
                         style: TextStyle(fontSize: 20),
-                      )
+                      ),
+                      Text(
+                        '${element.updatedAt.hour}:${element.updatedAt.minute}:${element.updatedAt.second}',
+                      ),
                     ];
                   }
 
