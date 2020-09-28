@@ -32,6 +32,6 @@ class ListRepository {
   }
 
   Future<int> getStatus(String url) async {
-    return serverApiClient.getStatus(url);
+    return await serverApiClient.getStatus(url);
   }
 }

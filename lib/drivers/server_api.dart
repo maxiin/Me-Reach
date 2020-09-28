@@ -1,12 +1,16 @@
-import 'package:http/http.dart' as http;
+import 'dart:async';
+import 'dart:io';
+
+// import 'package:http/http.dart' as http;
 import 'package:flutter/widgets.dart';
+import 'package:http/http.dart';
 
 abstract class BaseApi {
   Future<int> getStatus(String url);
 }
 
 class ServerApiClient implements BaseApi {
-  final http.Client httpClient;
+  final Client httpClient;
 
   ServerApiClient({@required this.httpClient});
 
@@ -17,12 +21,17 @@ class ServerApiClient implements BaseApi {
       url = 'http://' + url;
     }
 
-    http.Response request;
+    Response response;
     try {
-      request = await this.httpClient.get(url);
-    } catch (_) {
+      response = await get(url).timeout(Duration(seconds: 5));
+      if (response == null) {
+        return 408;
+      }
+    } on TimeoutException catch (_) {
+      return 408;
+    } on SocketException catch (_) {
       return 0;
     }
-    return request.statusCode;
+    return response.statusCode;
   }
 }
